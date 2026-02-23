@@ -1,41 +1,74 @@
 /**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ * Paleta de colores de Holistia (alineada con la web).
+ * Única fuente de colores para la app móvil.
  */
 
 import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+// Light mode (:root)
+const light = {
+  background: '#ffffff',
+  foreground: '#1d293d',
+  card: '#ffffff',
+  cardForeground: '#1d293d',
+  primary: '#6468f0',
+  primaryForeground: '#ffffff',
+  secondary: '#e4e8ef',
+  secondaryForeground: '#364050',
+  muted: '#f5f5f5',
+  mutedForeground: '#6c727e',
+  accent: '#e1e7fd',
+  accentForeground: '#364050',
+  destructive: '#f14444',
+  destructiveMuted: 'rgba(241, 68, 68, 0.15)',
+  border: '#e1e5eb',
+  input: '#e1e5eb',
+  ring: '#6468f0',
+  // Aliases para compatibilidad
+  text: '#1d293d',
+  tint: '#6468f0',
+  icon: '#6c727e',
+  tabIconDefault: '#6c727e',
+  tabIconSelected: '#6468f0',
+};
+
+// Dark mode (.dark)
+const dark = {
+  background: '#0f182b',
+  foreground: '#e4e8ef',
+  card: '#1d293d',
+  cardForeground: '#e4e8ef',
+  primary: '#818cf9',
+  primaryForeground: '#0f182b',
+  secondary: '#2f3848',
+  secondaryForeground: '#d1d4db',
+  muted: '#1d293d',
+  mutedForeground: '#9ba2ae',
+  accent: '#364050',
+  accentForeground: '#d1d4db',
+  destructive: '#f14444',
+  destructiveMuted: 'rgba(241, 68, 68, 0.15)',
+  border: '#4b5666',
+  input: '#4b5666',
+  ring: '#818cf9',
+  // Aliases para compatibilidad
+  text: '#e4e8ef',
+  tint: '#818cf9',
+  icon: '#9ba2ae',
+  tabIconDefault: '#9ba2ae',
+  tabIconSelected: '#818cf9',
+};
 
 export const Colors = {
-  light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
-  },
-  dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
-  },
+  light,
+  dark,
 };
 
 export const Fonts = Platform.select({
   ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
     sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
     serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
     rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
     mono: 'ui-monospace',
   },
   default: {

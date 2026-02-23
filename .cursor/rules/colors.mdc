@@ -1,0 +1,33 @@
+---
+description: Paleta de colores - usar solo constants/theme.ts en la app móvil
+globs: **/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Colores de la app móvil Holistia
+
+La app móvil **solo** debe usar los colores definidos en `@/constants/theme.ts`. No usar colores hardcodeados (#hex, rgb, rgba) fuera de ese archivo.
+
+## Uso correcto
+
+```typescript
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+
+// En componentes:
+const colorScheme = useColorScheme();
+const c = Colors[colorScheme ?? 'light'];
+
+// Usar: c.background, c.foreground, c.primary, c.card, c.secondary, c.muted,
+// c.accent, c.destructive, c.destructiveMuted, c.border, c.mutedForeground, etc.
+```
+
+## Ejemplos
+
+- Fondo: `c.background` o `c.card`
+- Texto: `c.foreground` o `c.mutedForeground`
+- Botones principales: `c.primary`
+- Errores: `c.destructive`, `c.destructiveMuted` (caja de error)
+- Links/énfasis: `c.primary` o `c.tint`
+- Bordes: `c.border`
+- Iconos secundarios: `c.mutedForeground`

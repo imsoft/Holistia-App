@@ -1,0 +1,15 @@
+---
+description: No usar placeholders en inputs
+globs: **/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Sin placeholders en inputs
+
+**Ningún input** debe tener `placeholder`. No usar `placeholder` en:
+- `TextInput` (React Native)
+- `Input`
+- `PasswordInput`
+- `<input>` (HTML/web)
+
+Usar labels visibles encima o al lado del campo para indicar qué debe introducir el usuario. Los placeholders se borran al escribir y dificultan la accesibilidad.

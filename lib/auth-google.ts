@@ -1,4 +1,5 @@
 import { makeRedirectUri } from 'expo-auth-session';
+import { router } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { supabase } from './supabase';
 
@@ -60,10 +61,12 @@ export async function signInWithGoogle(): Promise<{ error?: string }> {
           refresh_token: refreshToken,
         });
         if (sessionError) return { error: sessionError.message };
+        router.replace('/');
       } else if (code) {
         // Intercambiar el code por una sesión (flujo PKCE)
         const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
         if (exchangeError) return { error: exchangeError.message };
+        router.replace('/');
       }
     }
 

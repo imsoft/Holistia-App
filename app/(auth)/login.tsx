@@ -44,7 +44,7 @@ export default function LoginScreen() {
 
   useEffect(() => {
     if (session) {
-      router.replace('/(tabs)');
+      router.replace('/');
       return;
     }
     if (params.message === 'password_updated') {
@@ -105,7 +105,7 @@ export default function LoginScreen() {
           router.replace('/(auth)/account-deactivated');
           return;
         }
-        router.replace('/(tabs)');
+        router.replace('/');
       }
     } catch {
       setError('Ocurrió un error inesperado. Por favor, intenta de nuevo.');

@@ -40,7 +40,7 @@ export default function SignupScreen() {
 
   useEffect(() => {
     if (session) {
-      router.replace('/(tabs)');
+      router.replace('/');
     }
   }, [session]);
 
@@ -98,7 +98,7 @@ export default function SignupScreen() {
             router.replace('/(auth)/account-deactivated');
             return;
           }
-          router.replace('/(tabs)');
+          router.replace('/');
         } else {
           setSuccess(true);
           router.push('/(auth)/confirm-email');

@@ -1,101 +1,84 @@
-import {
-  GoogleSignin,
-  statusCodes,
-} from '@react-native-google-signin/google-signin';
-import { router } from 'expo-router';
-import { Platform } from 'react-native';
-import { verifyLoginAndProfile } from './auth-helpers';
+import { makeRedirectUri } from 'expo-auth-session';
+import * as WebBrowser from 'expo-web-browser';
 import { supabase } from './supabase';
 
-const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? '';
-const iosClientId = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ?? '';
+WebBrowser.maybeCompleteAuthSession();
 
 /**
- * Configura Google Sign-In. Llamar al iniciar la app (ej. en _layout.tsx o AuthInitializer).
- * - webClientId: OAuth tipo "Web application" (para idToken).
- * - iosClientId: OAuth tipo "iOS" (requerido en iOS si no usas Firebase/GoogleService-Info.plist).
- */
-export function configureGoogleSignIn() {
-  if (Platform.OS === 'web') return;
-  if (!webClientId) return;
-  GoogleSignin.configure({
-    webClientId,
-    ...(Platform.OS === 'ios' && iosClientId ? { iosClientId } : {}),
-    offlineAccess: true,
-  });
-}
-
-/**
- * Inicia sesión con Google usando el selector nativo de cuentas (sin WebView).
- * Solo funciona en iOS/Android con development build (no Expo Go).
+ * Inicia sesión con Google abriendo el navegador externo del sistema (no WebView).
+ * Usa Supabase OAuth para generar la URL de autorización de Google.
+ *
+ * Requisito en Supabase Dashboard → Authentication → URL Configuration → Redirect URLs:
+ *   holistia://auth/callback
  */
 export async function signInWithGoogle(): Promise<{ error?: string }> {
-  if (Platform.OS === 'web') {
-    return { error: 'Google Sign-In nativo no disponible en web' };
-  }
-
-  if (!webClientId) {
-    return {
-      error:
-        'Falta EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID en .env. Configura las credenciales de Google Cloud Console.',
-    };
-  }
-
   try {
-    await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
-  } catch {
-    return { error: 'Google Play Services no disponible' };
-  }
+    const redirectTo = makeRedirectUri({
+      scheme: 'holistia',
+      path: 'auth/callback',
+    });
 
-  try {
-    const signInResult = await GoogleSignin.signIn();
-
-    if (signInResult.type === 'cancelled' || !signInResult.data) {
-      return {};
-    }
-
-    const idToken = signInResult.data.idToken;
-
-    if (!idToken) {
-      return {
-        error:
-          'No se pudo obtener el token de Google. Verifica que EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID sea el Web Client ID (no Android/iOS).',
-      };
-    }
-
-    const { data, error } = await supabase.auth.signInWithIdToken({
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      token: idToken,
+      options: {
+        redirectTo,
+        skipBrowserRedirect: true,
+      },
     });
 
     if (error) {
       return { error: error.message };
     }
 
-    if (data.session) {
-      const result = await verifyLoginAndProfile(supabase, data.session);
-      if (result.ok === false && result.deactivated) {
-        router.replace('/(auth)/account-deactivated');
-        return {};
+    if (!data?.url) {
+      return { error: 'No se pudo obtener la URL de autorización de Google.' };
+    }
+
+    // Abre el navegador externo del sistema (Safari en iOS, Chrome en Android)
+    const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+
+    if (result.type === 'cancel' || result.type === 'dismiss') {
+      return {};
+    }
+
+    if (result.type === 'success' && result.url) {
+      // Parsear el access_token y refresh_token del fragment (#) de la URL de callback
+      const url = new URL(result.url);
+
+      // Supabase devuelve los tokens en el fragment hash (PKCE los devuelve en query params)
+      const hashParams = new URLSearchParams(url.hash.replace('#', ''));
+      const accessToken = hashParams.get('access_token');
+      const refreshToken = hashParams.get('refresh_token') ?? '';
+
+      // Fallback: buscar en query params (usado por PKCE)
+      const queryParams = url.searchParams;
+      const code = queryParams.get('code');
+
+      if (accessToken) {
+        const { error: sessionError } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+        if (sessionError) return { error: sessionError.message };
+      } else if (code) {
+        // Intercambiar el code por una sesión (flujo PKCE)
+        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+        if (exchangeError) return { error: exchangeError.message };
       }
-      router.replace('/(tabs)');
     }
 
     return {};
   } catch (err: unknown) {
-    if (err && typeof err === 'object' && 'code' in err) {
-      if (err.code === statusCodes.SIGN_IN_CANCELLED) {
-        return {};
-      }
-      if (err.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-        return { error: 'Google Play Services no disponible' };
-      }
-      if (err.code === statusCodes.IN_PROGRESS) {
-        return {};
-      }
-    }
     const message =
       err instanceof Error ? err.message : 'Error inesperado al iniciar sesión con Google';
     return { error: message };
   }
+}
+
+/**
+ * @deprecated No requerida con el flujo OAuth por navegador.
+ * Se mantiene para compatibilidad con auth-initializer.tsx.
+ */
+export function configureGoogleSignIn() {
+  // No-op: el flujo OAuth por navegador no requiere configuración previa.
 }

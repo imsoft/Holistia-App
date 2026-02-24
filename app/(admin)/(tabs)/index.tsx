@@ -1,19 +1,19 @@
-import { useCallback, useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  RefreshControl,
-  Pressable,
-  ActivityIndicator,
-} from 'react-native';
-import { router } from 'expo-router';
+import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { fetchAdminDashboardData, type AdminDashboardStat } from '@/lib/admin-dashboard-data';
 import { supabase } from '@/lib/supabase';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import { router } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 function StatCard({
   stat,
@@ -117,7 +117,7 @@ export default function AdminDashboardScreen() {
               key={stat.title}
               stat={stat}
               colors={colors}
-              onPress={stat.route ? () => navigate(stat.route) : undefined}
+              onPress={stat.route ? () => navigate(stat.route!) : undefined}
             />
           ))}
         </View>
@@ -132,7 +132,7 @@ export default function AdminDashboardScreen() {
               key={stat.title}
               stat={stat}
               colors={colors}
-              onPress={stat.route ? () => navigate(stat.route) : undefined}
+              onPress={stat.route ? () => navigate(stat.route!) : undefined}
             />
           ))}
         </View>
@@ -147,7 +147,7 @@ export default function AdminDashboardScreen() {
               key={stat.title}
               stat={stat}
               colors={colors}
-              onPress={stat.route ? () => navigate(stat.route) : undefined}
+              onPress={stat.route ? () => navigate(stat.route!) : undefined}
             />
           ))}
         </View>

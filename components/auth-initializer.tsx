@@ -1,11 +1,16 @@
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
 import { useAuthStore } from '@/stores/auth-store';
+import { configureGoogleSignIn } from '@/lib/auth-google';
 import { registerForPushNotifications } from '@/lib/push-notifications';
 
 export function AuthInitializer({ children }: { children: React.ReactNode }) {
   const initialize = useAuthStore((s) => s.initialize);
   const session = useAuthStore((s) => s.session);
+
+  useEffect(() => {
+    configureGoogleSignIn();
+  }, []);
 
   useEffect(() => {
     const unsubscribe = initialize();

@@ -1,27 +1,26 @@
-import { useState, useEffect } from 'react';
-import { useAuthStore } from '@/stores/auth-store';
-import {
-  View,
-  Text,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-} from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
-import { Image } from 'expo-image';
-import { Link } from 'expo-router';
+import { Button } from '@/components/ui/button';
+import { GoogleButton } from '@/components/ui/google-button';
+import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
+import { API_BASE_URL } from '@/constants/auth';
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { signInWithGoogle } from '@/lib/auth-google';
 import { verifyLoginAndProfile } from '@/lib/auth-helpers';
 import { supabase } from '@/lib/supabase';
-import { API_BASE_URL } from '@/constants/auth';
 import { normalizeName } from '@/lib/text-utils';
-import { Input } from '@/components/ui/input';
-import { PasswordInput } from '@/components/ui/password-input';
-import { Button } from '@/components/ui/button';
-import { GoogleButton } from '@/components/ui/google-button';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useAuthStore } from '@/stores/auth-store';
+import { Image } from 'expo-image';
+import { Link, router, useLocalSearchParams } from 'expo-router';
+import { useEffect, useState } from 'react';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 const LOGO_URL = 'https://www.holistia.io/logos/holistia-black.png';
 
@@ -94,7 +93,8 @@ export default function SignupScreen() {
           const result = await verifyLoginAndProfile(supabase, data.session);
           if (result.ok === false && result.deactivated) {
             setLoading(false);
-            // @ts-expect-error - ruta account-deactivated (tipos generados por Expo)
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore - ruta account-deactivated (tipos generados por Expo)
             router.replace('/(auth)/account-deactivated');
             return;
           }

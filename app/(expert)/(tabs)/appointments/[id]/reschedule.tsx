@@ -1,25 +1,25 @@
-import { useState, useEffect, useCallback } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { getTimeSlotsForDate } from '@/lib/availability';
+import { supabase } from '@/lib/supabase';
+import { webApiFetch } from '@/lib/web-api';
+import { useAuthStore } from '@/stores/auth-store';
+import { useProfessionalStore } from '@/stores/professional-store';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
   ActivityIndicator,
-  Pressable,
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
-import { useAuthStore } from '@/stores/auth-store';
-import { useProfessionalStore } from '@/stores/professional-store';
-import { supabase } from '@/lib/supabase';
-import { webApiFetch } from '@/lib/web-api';
-import { getTimeSlotsForDate } from '@/lib/availability';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 
 const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
@@ -208,7 +208,8 @@ export default function ExpertRescheduleAppointmentScreen() {
   );
 }
 
-// @ts-expect-error Expo Router options
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore Expo Router options
 ExpertRescheduleAppointmentScreen.options = { title: 'Reprogramar cita' };
 
 const styles = StyleSheet.create({

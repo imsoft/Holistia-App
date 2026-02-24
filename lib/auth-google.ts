@@ -1,100 +1,101 @@
-import { makeRedirectUri } from 'expo-auth-session';
-import * as QueryParams from 'expo-auth-session/build/QueryParams';
-import * as WebBrowser from 'expo-web-browser';
+import {
+  GoogleSignin,
+  statusCodes,
+} from '@react-native-google-signin/google-signin';
 import { router } from 'expo-router';
+import { Platform } from 'react-native';
 import { verifyLoginAndProfile } from './auth-helpers';
 import { supabase } from './supabase';
 
-/**
- * Extrae access_token y refresh_token de la URL de callback.
- * Supabase puede enviar los tokens en el hash (#) o en query params (?)
- */
-function extractTokensFromUrl(url: string): { access_token?: string; refresh_token?: string } {
-  try {
-    const { params, errorCode } = QueryParams.getQueryParams(url);
-    if (!errorCode && params.access_token) {
-      return { access_token: params.access_token, refresh_token: params.refresh_token };
-    }
-  } catch {
-    // Fallback: parsear hash manualmente (Supabase usa #access_token=...)
-  }
-  const hash = url.split('#')[1];
-  if (!hash) return {};
-  const params = Object.fromEntries(new URLSearchParams(hash));
-  return { access_token: params.access_token, refresh_token: params.refresh_token };
-}
+const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? '';
+const iosClientId = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ?? '';
 
 /**
- * Crea la sesión a partir de la URL de callback de OAuth (con access_token y refresh_token)
+ * Configura Google Sign-In. Llamar al iniciar la app (ej. en _layout.tsx o AuthInitializer).
+ * - webClientId: OAuth tipo "Web application" (para idToken).
+ * - iosClientId: OAuth tipo "iOS" (requerido en iOS si no usas Firebase/GoogleService-Info.plist).
  */
-async function createSessionFromUrl(url: string) {
-  const { access_token, refresh_token } = extractTokensFromUrl(url);
-
-  if (!access_token) return;
-
-  const { data, error } = await supabase.auth.setSession({
-    access_token,
-    refresh_token: refresh_token ?? '',
+export function configureGoogleSignIn() {
+  if (Platform.OS === 'web') return;
+  if (!webClientId) return;
+  GoogleSignin.configure({
+    webClientId,
+    ...(Platform.OS === 'ios' && iosClientId ? { iosClientId } : {}),
+    offlineAccess: true,
   });
-  if (error) throw error;
-  return data.session;
 }
 
 /**
- * Inicia el flujo de OAuth con Google.
- * Abre el navegador, el usuario inicia sesión con Google, y al completar
- * se establece la sesión y se redirige a la app principal.
+ * Inicia sesión con Google usando el selector nativo de cuentas (sin WebView).
+ * Solo funciona en iOS/Android con development build (no Expo Go).
  */
 export async function signInWithGoogle(): Promise<{ error?: string }> {
+  if (Platform.OS === 'web') {
+    return { error: 'Google Sign-In nativo no disponible en web' };
+  }
+
+  if (!webClientId) {
+    return {
+      error:
+        'Falta EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID en .env. Configura las credenciales de Google Cloud Console.',
+    };
+  }
+
   try {
-    // Completar sesión pendiente (requerido en web)
-    WebBrowser.maybeCompleteAuthSession();
+    await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+  } catch {
+    return { error: 'Google Play Services no disponible' };
+  }
 
-    const redirectTo = makeRedirectUri({
-      scheme: 'holistia',
-      path: 'auth/callback',
-    });
+  try {
+    const signInResult = await GoogleSignin.signIn();
 
-    const { data, error } = await supabase.auth.signInWithOAuth({
+    if (signInResult.type === 'cancelled' || !signInResult.data) {
+      return {};
+    }
+
+    const idToken = signInResult.data.idToken;
+
+    if (!idToken) {
+      return {
+        error:
+          'No se pudo obtener el token de Google. Verifica que EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID sea el Web Client ID (no Android/iOS).',
+      };
+    }
+
+    const { data, error } = await supabase.auth.signInWithIdToken({
       provider: 'google',
-      options: {
-        redirectTo,
-        skipBrowserRedirect: true,
-      },
+      token: idToken,
     });
 
     if (error) {
       return { error: error.message };
     }
 
-    if (!data?.url) {
-      return { error: 'No se pudo obtener la URL de autenticación' };
-    }
-
-    const res = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
-
-    if (res.type === 'success' && res.url) {
-      const session = await createSessionFromUrl(res.url);
-      if (session) {
-        const result = await verifyLoginAndProfile(supabase, session);
-        if (result.ok === false && result.deactivated) {
-          // @ts-expect-error - ruta account-deactivated (tipos generados por Expo)
-          router.replace('/(auth)/account-deactivated');
-          return {};
-        }
+    if (data.session) {
+      const result = await verifyLoginAndProfile(supabase, data.session);
+      if (result.ok === false && result.deactivated) {
+        router.replace('/(auth)/account-deactivated');
+        return {};
       }
       router.replace('/(tabs)');
-      return {};
     }
 
-    // Usuario canceló o cerró el navegador
-    if (res.type === 'cancel' || res.type === 'dismiss') {
-      return {};
+    return {};
+  } catch (err: unknown) {
+    if (err && typeof err === 'object' && 'code' in err) {
+      if (err.code === statusCodes.SIGN_IN_CANCELLED) {
+        return {};
+      }
+      if (err.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        return { error: 'Google Play Services no disponible' };
+      }
+      if (err.code === statusCodes.IN_PROGRESS) {
+        return {};
+      }
     }
-
-    return { error: 'No se pudo completar el inicio de sesión' };
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Error inesperado al iniciar sesión con Google';
+    const message =
+      err instanceof Error ? err.message : 'Error inesperado al iniciar sesión con Google';
     return { error: message };
   }
 }

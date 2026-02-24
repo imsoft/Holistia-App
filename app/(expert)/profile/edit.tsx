@@ -1,29 +1,29 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { API_BASE_URL } from '@/constants/auth';
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { supabase } from '@/lib/supabase';
+import { useAuthStore } from '@/stores/auth-store';
+import { useProfessionalStore } from '@/stores/professional-store';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Image } from 'expo-image';
+import * as ImagePicker from 'expo-image-picker';
+import { router } from 'expo-router';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Pressable,
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Platform,
-  TextInput,
+  Pressable,
+  ScrollView,
   Share,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import { router } from 'expo-router';
-import { useAuthStore } from '@/stores/auth-store';
-import { useProfessionalStore } from '@/stores/professional-store';
-import { supabase } from '@/lib/supabase';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { Image } from 'expo-image';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { API_BASE_URL } from '@/constants/auth';
 
 function validateUsername(value: string): string | null {
   if (!value) return null;
@@ -310,7 +310,8 @@ export default function ExpertProfileEditScreen() {
   );
 }
 
-// @ts-expect-error Expo Router options
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore Expo Router options
 ExpertProfileEditScreen.options = { title: 'Editar perfil' };
 
 const styles = StyleSheet.create({

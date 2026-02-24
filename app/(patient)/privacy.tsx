@@ -1,24 +1,24 @@
-import { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Pressable,
-  ActivityIndicator,
-  Switch,
-  Modal,
-  Alert,
-} from 'react-native';
-import { useAuthStore } from '@/stores/auth-store';
+import { Button } from '@/components/ui/button';
+import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { fetchPrivacy, updatePrivacy, type PrivacySettings } from '@/lib/privacy';
 import { registerForPushNotifications, removePushToken } from '@/lib/push-notifications';
-import { Platform } from 'react-native';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useAuthStore } from '@/stores/auth-store';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { Button } from '@/components/ui/button';
+import { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  View,
+} from 'react-native';
 
 const PROFILE_VISIBILITY_OPTIONS: { value: PrivacySettings['profile_visibility']; label: string }[] = [
   { value: 'public', label: 'Público - Todos pueden ver' },
@@ -279,8 +279,8 @@ export default function PrivacyScreen() {
           onValueChange={(v) => {
             update('push_notifications', v);
             if (session?.user?.id && Platform.OS !== 'web') {
-              if (v) registerForPushNotifications(session.user.id).catch(() => {});
-              else removePushToken(session.user.id).catch(() => {});
+              if (v) registerForPushNotifications(session.user.id).catch(() => { });
+              else removePushToken(session.user.id).catch(() => { });
             }
           }}
           c={c}
@@ -469,7 +469,8 @@ export default function PrivacyScreen() {
   );
 }
 
-// @ts-expect-error Expo Router options
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore Expo Router options
 PrivacyScreen.options = { title: 'Privacidad' };
 
 const styles = StyleSheet.create({

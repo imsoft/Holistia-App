@@ -1,28 +1,28 @@
-import { useState, useCallback, useMemo } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  RefreshControl,
-  ActivityIndicator,
-  Pressable,
-  Alert,
-  Modal,
-  ScrollView,
-  Dimensions,
-} from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
-import { router } from 'expo-router';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useProfessionalStore } from '@/stores/professional-store';
-import { useAuthStore } from '@/stores/auth-store';
-import { supabase } from '@/lib/supabase';
-import { webApiFetch } from '@/lib/web-api';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { EmptyState } from '@/components/ui/empty-state';
+import { supabase } from '@/lib/supabase';
+import { webApiFetch } from '@/lib/web-api';
+import { useAuthStore } from '@/stores/auth-store';
+import { useProfessionalStore } from '@/stores/professional-store';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { useFocusEffect } from '@react-navigation/native';
+import { router } from 'expo-router';
+import { useCallback, useMemo, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  FlatList,
+  Modal,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 type Apt = {
   id: string;
@@ -286,7 +286,7 @@ export default function ExpertAppointmentsScreen() {
         </View>
         <Button
           title="Nueva cita"
-          onPress={() => router.push('/(tabs)/appointments/new')}
+          onPress={() => router.push('/(tabs)/appointments/new' as any)}
           variant="primary"
         />
       </View>

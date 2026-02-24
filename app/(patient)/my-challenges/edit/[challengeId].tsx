@@ -1,22 +1,22 @@
-import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { webApiFetch } from '@/lib/web-api';
+import { useAuthStore } from '@/stores/auth-store';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Pressable,
+  ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
-import { useAuthStore } from '@/stores/auth-store';
-import { webApiFetch } from '@/lib/web-api';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 
 const DIFFICULTY_OPTIONS = [
   { value: '', label: 'Sin especificar' },
@@ -170,7 +170,8 @@ export default function EditChallengeScreen() {
   );
 }
 
-// @ts-expect-error Expo Router options
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore Expo Router options
 EditChallengeScreen.options = { title: 'Editar reto' };
 
 const styles = StyleSheet.create({
